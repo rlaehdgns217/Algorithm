@@ -1,5 +1,7 @@
 const autoTeam = (data) => {
   let students = [];
+  let jokers = [];
+  let teams = [];
 
   const isFav = (name, favorite) => {
     if (name === "" || favorite === "") return false;
@@ -20,9 +22,11 @@ const autoTeam = (data) => {
       return true;
     else return false;
   };
-  const makeTeam = (student, team, remain) => {
+
+  const makeTeam = (student, team) => {
     let fav = data[student].Favorite;
     let dif = data[student].Difficult;
+
     if (team.length === 4) {
       return team;
     }
@@ -40,20 +44,50 @@ const autoTeam = (data) => {
           team.push(fav[i]);
           return makeTeam(fav[i], team);
         }
+      } else if (isFav(student, fav[i])) {
+        let check = false;
+        for (let j = 0; j < team.length; j += 1) {
+          if (isDiff(team[j], fav[i]) === true) {
+            console.log(team[j], fav[i]);
+            check = true;
+          }
+        }
+        if (check === false && team.includes(fav[i]) === false) {
+          team.push(fav[i]);
+          return makeTeam(fav[i], team);
+        }
+      } else if (fav[0] === "" && fav[1] === "" && fav[2] === "") {
+        let check = false;
+        for (let j = 0; j < team.length; j += 1) {
+          if (isDiff(team[j], fav[i]) === true) {
+            check = true;
+          }
+        }
+        if (check === false && team.includes(student) === false) {
+          team.push(student);
+          return makeTeam(team[0], team);
+        }
+      } else {
+        console.log(student, team, "Check 필요!");
+        if (!team.includes(student)) {
+          team.push(student);
+          return makeTeam(student, team);
+        }
+        jokers.push(student);
       }
     }
-    for (let i = 0; i < 3; i += 1) {}
   };
 
   for (let key in data) {
     students.push(key);
+    if (teams.includes(makeTeam(key, []).sort())) {
+      console.log(makeTeam(key, []).sort());
+    }
   }
 
-  console.log(students);
-  console.log(
-    students.filter((student) => {
-      return !makeTeam(students[0], []).includes(student);
-    }),
-    ""
-  );
+  students.filter((student) => {
+    return !makeTeam(students[0], []).includes(student);
+  });
+
+  console.log(makeTeam("A", []));
 };
