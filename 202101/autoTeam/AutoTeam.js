@@ -2,6 +2,7 @@ const autoTeam = (data) => {
   let students = [];
   let jokers = [];
   let teams = [];
+  let result = {};
 
   const isFav = (name, favorite) => {
     if (name === "" || favorite === "") return false;
@@ -25,7 +26,6 @@ const autoTeam = (data) => {
 
   const makeTeam = (student, team) => {
     let fav = data[student].Favorite;
-    let dif = data[student].Difficult;
 
     if (team.length === 4) {
       return team;
@@ -33,7 +33,6 @@ const autoTeam = (data) => {
     if (!team.includes(student)) {
       team.push(student);
     }
-
     for (let i = 0; i < 3; i += 1) {
       if (isCross(student, fav[i])) {
         let check = false;
@@ -48,7 +47,6 @@ const autoTeam = (data) => {
         let check = false;
         for (let j = 0; j < team.length; j += 1) {
           if (isDiff(team[j], fav[i]) === true) {
-            console.log(team[j], fav[i]);
             check = true;
           }
         }
@@ -65,29 +63,65 @@ const autoTeam = (data) => {
         }
         if (check === false && team.includes(student) === false) {
           team.push(student);
-          return makeTeam(team[0], team);
+          return (
+            makeTeam(team[0], team) ||
+            makeTeam(team[1], team) ||
+            makeTeam(team[2], team)
+          );
+        } else {
+          if (team.length < 3) {
+            jokers.push(student);
+            return team;
+          }
+          return team;
         }
       } else {
-        console.log(student, team, "Check 필요!");
-        if (!team.includes(student)) {
-          team.push(student);
-          return makeTeam(student, team);
+        if (team.length < 3) {
+          return (
+            makeTeam(team[0], team) ||
+            makeTeam(team[1], team) ||
+            makeTeam(team[2], team)
+          );
         }
-        jokers.push(student);
+        console.log("check필요!!");
+        return team;
       }
     }
   };
 
   for (let key in data) {
     students.push(key);
-    if (teams.includes(makeTeam(key, []).sort())) {
-      console.log(makeTeam(key, []).sort());
+    teams.push(JSON.stringify(makeTeam(key, []).sort()));
+  }
+
+  // console.log(students.filter((student) => {
+  //    return !makeTeam(students[0],[]).includes(student)
+  //  }))
+
+  let jsonArr = Array.from(new Set(teams));
+  let newArr = [];
+  for (let i = 0; i < jsonArr.length; i += 1) {
+    newArr.push(JSON.parse(jsonArr[i]));
+  }
+  for (let i = 0; i < students.length; i += 1) {
+    if (
+      newArr
+        .filter((team) => team.length === 4)
+        .filter((arr) => arr.includes(students[i])).length === 1
+    ) {
+      result[students[i]] = newArr
+        .filter((team) => team.length === 4)
+        .filter((arr) => arr.includes(students[i]))[0];
+    } else {
+      console.log(
+        newArr
+          .filter((team) => team.length === 4)
+          .filter((arr) => arr.includes(students[i])),
+        "student:",
+        students[i]
+      );
     }
   }
 
-  students.filter((student) => {
-    return !makeTeam(students[0], []).includes(student);
-  });
-
-  console.log(makeTeam("A", []));
+  console.log(result);
 };
