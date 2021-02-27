@@ -177,3 +177,85 @@ const autoTeam = (data) => {
   //     }
   //   }
 };
+
+//20210227 point 버전
+const autoTeam = (data) => {
+  const result = [];
+  const sortArr = [];
+  const team = {};
+
+  const isFav = (name, favorite) => {
+    if (name === "" || favorite === "") return false;
+    if (data[name].Favorite.includes(favorite)) return true;
+    else return false;
+  };
+  const isCross = (name, favorite) => {
+    if (name === "" || favorite === "") return false;
+    else if (isFav(name, favorite) && isFav(favorite, name)) return true;
+    else return false;
+  };
+  const isDiff = (name, difficult) => {
+    if (name === "" || difficult === "") return false;
+    if (
+      data[name].Difficult.includes(difficult) ||
+      data[difficult].Difficult.includes(name)
+    )
+      return true;
+    else return false;
+  };
+
+  const makePoint = (name) => {
+    let point = 0;
+
+    for (let key in data) {
+      if (data[key].Favorite.includes(name)) {
+        point++;
+      }
+    }
+    sortArr.push([name, point]);
+  };
+  const makeSort = () => {
+    for (let key in data) {
+      makePoint(key);
+    }
+
+    return sortArr.sort((a, b) => b[1] - a[1]);
+  };
+  const makeLead = () => {
+    let peopleNumber = 0;
+    for (let key in data) {
+      peopleNumber++;
+    }
+    makeSort();
+
+    if (peopleNumber % 4 === 0) {
+      for (let i = 0; i < peopleNumber / 4; i += 1) {
+        team[i + 1] = [sortArr[i][0]];
+      }
+      return team;
+    } else if (peopleNumber % 4 === 1) {
+      for (let i = 0; i < (peopleNumber - 9) / 4 + 3; i += 1) {
+        team[i + 1] = [sortArr[i][0]];
+      }
+      return team;
+    } else if (peopleNumber % 4 === 2) {
+      for (let i = 0; i < (peopleNumber - 6) / 4 + 2; i += 1) {
+        team[i + 1] = [sortArr[i][0]];
+      }
+      return team;
+    } else if (peopleNumber % 4 === 3) {
+      for (let i = 0; i < (peopleNumber - 3) / 4 + 1; i += 1) {
+        let teamLead = sortArr[i][0];
+
+        if (isCross(teamLead, data[teamLead].Favorite[0])) {
+          team[i + 1] = [teamLead, data[teamLead].Favorite[0]];
+        }
+      }
+      return team;
+    }
+  };
+
+  makeLead();
+
+  console.log(team);
+};
